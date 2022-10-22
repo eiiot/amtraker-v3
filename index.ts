@@ -282,7 +282,7 @@ const updateTrains = async () => {
               routeName: rawTrainData.RouteName,
               trainNum: +rawTrainData.TrainNum,
               trainID: `${+rawTrainData.TrainNum}-${new Date(
-                parseDate(rawTrainData.stations[0].schDep, rawTrainData.stations[0].code)
+                parseDate(stations[0].schDep, stations[0].code)
               ).getDate()}`,
               stations: stations,
               heading: rawTrainData.Heading,
