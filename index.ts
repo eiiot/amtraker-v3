@@ -3,8 +3,8 @@ import * as fs from "fs";
 import * as moment from "moment-timezone";
 import * as schedule from "node-schedule";
 
-import { Amtrak, RawStation } from "./amtrak";
-import { Train, Station, StationStatus } from "./amtraker";
+import { Amtrak, RawStation } from "./types/amtrak";
+import { Train, Station, StationStatus, TrainResponse } from "./types/amtraker";
 
 import * as trainMetaData from "./data/trains";
 import * as stationMetaData from "./data/stations";
@@ -225,7 +225,7 @@ const updateTrains = async () => {
   console.log("Updating trains...");
   fetchTrainsForCleaning()
     .then((amtrakData) => {
-      let trains: { [key: string]: Train[] } = {};
+      let trains: TrainResponse = {};
 
       amtrakData.forEach((property) => {
         let rawTrainData = property.properties;
@@ -273,14 +273,15 @@ const updateTrains = async () => {
         trains[rawTrainData.TrainNum].push(train);
       });
 
-      amtrakerCache.set("trains", trains);
+      amtrakerCache.setTrains("trains", trains);
+      console.log('set trains cache')
     })
     .catch((e) => {
       console.log("Error fetching train data:", e);
     });
 };
 
-// updateTrains();
+updateTrains();
 
 schedule.scheduleJob("*/3 * * * *", updateTrains);
 

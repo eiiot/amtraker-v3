@@ -1,10 +1,10 @@
-import { Response } from "./amtraker";
+import { StationResponse, TrainResponse } from "./types/amtraker";
 
 export default class cache {
-  trains: Response;
+  trains: TrainResponse;
 
   constructor() {
-    this.trains = { test: [] };
+    this.trains = {};
     return;
   }
 
@@ -12,7 +12,11 @@ export default class cache {
     return this[key];
   }
 
-  set(key: string, data: Response) {
+  setTrains(key: string, data: TrainResponse) {
+    this[key] = data;
+  }
+
+  setStations(key: string, data: StationResponse) {
     this[key] = data;
   }
 }

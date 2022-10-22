@@ -54,6 +54,10 @@ export enum StationStatus {
   Unknown = "Unknown",
 }
 
-export interface Response {
+export interface TrainResponse {
   [key: string]: Train[];
+}
+
+export interface StationResponse {
+  [key: string]: Station;
 }
