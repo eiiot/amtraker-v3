@@ -278,7 +278,10 @@ const updateTrains = async () => {
             );
 
             if (stations.length === 0) {
-              console.log("No stations found for train:", rawTrainData.TrainNum);
+              console.log(
+                "No stations found for train:",
+                rawTrainData.TrainNum
+              );
               return;
             }
 
@@ -372,26 +375,31 @@ Bun.serve({
 
       console.log("train num", trainNum);
 
+      if (trainNum.split("-").length === 2) {
+        const trainsArr = trains[trainNum.split("-")[0]];
+        console.log(trainsArr);
+
+        for (let i = 0; i < trainsArr.length; i++) {
+          console.log(trainNum, trainsArr[i].trainID);
+          if (trainsArr[i].trainID === trainNum) {
+            return new Response(
+              JSON.stringify({ [trainNum.split("-")[0]]: [trainsArr[i]] }),
+              {
+                headers: {
+                  "content-type": "application/json",
+                },
+              }
+            );
+          }
+        }
+      }
+
       if (trains[trainNum] == null) {
         return new Response(JSON.stringify([]), {
           headers: {
             "content-type": "application/json",
           },
         });
-      }
-
-      if (trainNum.split("-").length === 2) {
-        const trainsArr = trains[trainNum];
-
-        for (let i = 0; i < trainsArr.length; i++) {
-          if (trainsArr[i].trainID === trainNum) {
-            return new Response(JSON.stringify(trainsArr[i]), {
-              headers: {
-                "content-type": "application/json",
-              },
-            });
-          }
-        }
       }
 
       return new Response(
