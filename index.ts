@@ -376,6 +376,20 @@ Bun.serve({
         });
       }
 
+      if (trainNum.split('-').length === 2) {
+        const trainsArr = trains[trainNum];
+
+        for (let i = 0; i < trainsArr.length; i++) {
+          if (trainsArr[i].trainID === trainNum) {
+            return new Response(JSON.stringify(trainsArr[i]), {
+              headers: {
+                "content-type": "application/json",
+              },
+            });
+          }
+        }
+      }
+
       return new Response(
         JSON.stringify({
           [trainNum]: trains[trainNum],
