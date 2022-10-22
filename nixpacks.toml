@@ -1,10 +1,10 @@
 # screw proper configs
 [phases.setup]
+nixPkgs = ['unzip']
 cmds = []
 
 [phases.install]
 cmds = []
 
 [start]
-nixPkgs = ['unzip']
 cmd = 'bash run.sh'
