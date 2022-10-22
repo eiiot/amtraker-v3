@@ -231,108 +231,111 @@ const parseRawStation = (rawStation: RawStation) => {
 const updateTrains = async () => {
   let stations: StationResponse = {};
   console.log("Updating trains...");
-  fetchStationsForCleaning().then((stationData) => {
-    stationData.forEach((station) => {
-      amtrakerCache.setStation(station.properties.Code, {
-        name: stationMetaData.stationNames[station.properties.Code],
-        code: station.properties.Code,
-        tz: stationMetaData.timeZones[station.properties.Code],
-        lat: station.properties.lat,
-        lon: station.properties.lon,
-        address1: station.properties.Address1,
-        address2: station.properties.Address2,
-        city: station.properties.City,
-        state: station.properties.State,
-        zip: station.properties.Zipcode,
-        trains: [],
+  fetchStationsForCleaning()
+    .then((stationData) => {
+      stationData.forEach((station) => {
+        amtrakerCache.setStation(station.properties.Code, {
+          name: stationMetaData.stationNames[station.properties.Code],
+          code: station.properties.Code,
+          tz: stationMetaData.timeZones[station.properties.Code],
+          lat: station.properties.lat,
+          lon: station.properties.lon,
+          address1: station.properties.Address1,
+          address2: station.properties.Address2,
+          city: station.properties.City,
+          state: station.properties.State,
+          zip: station.properties.Zipcode,
+          trains: [],
+        });
       });
-    });
 
-    fetchTrainsForCleaning()
-      .then((amtrakData) => {
-        let trains: TrainResponse = {};
+      fetchTrainsForCleaning()
+        .then((amtrakData) => {
+          let trains: TrainResponse = {};
 
-        amtrakData.forEach((property) => {
-          let rawTrainData = property.properties;
+          amtrakData.forEach((property) => {
+            let rawTrainData = property.properties;
 
-          let rawStations: Array<RawStation> = [];
+            let rawStations: Array<RawStation> = [];
 
-          for (let i = 1; i < 41; i++) {
-            let station = rawTrainData[`Station${i}`];
-            if (station == undefined) {
-              continue;
-            } else {
-              try {
-                let rawStation = JSON.parse(station);
-                if (rawStation.code === "CBN") continue;
-                rawStations.push(rawStation);
-              } catch (e) {
-                console.log("Error parsing station:", e);
+            for (let i = 1; i < 41; i++) {
+              let station = rawTrainData[`Station${i}`];
+              if (station == undefined) {
                 continue;
+              } else {
+                try {
+                  let rawStation = JSON.parse(station);
+                  if (rawStation.code === "CBN") continue;
+                  rawStations.push(rawStation);
+                } catch (e) {
+                  console.log("Error parsing station:", e);
+                  continue;
+                }
               }
             }
-          }
 
-          let stations = rawStations.map((station) => parseRawStation(station));
+            let stations = rawStations.map((station) =>
+              parseRawStation(station)
+            );
 
-          let train: Train = {
-            routeName: rawTrainData.RouteName,
-            trainNum: +rawTrainData.TrainNum,
-            trainID: `${+rawTrainData.TrainNum}-${new Date(
-              parseDate(rawTrainData.created_at, rawTrainData.EventCode)
-            ).getDate()}`,
-            stations: stations,
-            heading: rawTrainData.Heading,
-            eventCode: rawTrainData.EventCode,
-            origCode: rawTrainData.OrigCode,
-            originTZ: stationMetaData.timeZones[rawTrainData.OrigCode],
-            destCode: rawTrainData.DestCode,
-            destTZ: stationMetaData.timeZones[rawTrainData.DestCode],
-            trainState: rawTrainData.TrainState,
-            velocity: +rawTrainData.Velocity,
-            statusMsg: rawTrainData.StatusMsg,
-            createdAt: parseDate(
-              rawTrainData.created_at,
-              rawTrainData.EventCode
-            ),
-            updatedAt: parseDate(
-              rawTrainData.updated_at,
-              rawTrainData.EventCode
-            ),
-            lastValTS: parseDate(
-              rawTrainData.LastValTS,
-              rawTrainData.EventCode
-            ),
-            objectID: rawTrainData.OBJECTID,
-          };
+            let train: Train = {
+              routeName: rawTrainData.RouteName,
+              trainNum: +rawTrainData.TrainNum,
+              trainID: `${+rawTrainData.TrainNum}-${new Date(
+                parseDate(rawTrainData.created_at, rawTrainData.EventCode)
+              ).getDate()}`,
+              stations: stations,
+              heading: rawTrainData.Heading,
+              eventCode: rawTrainData.EventCode,
+              origCode: rawTrainData.OrigCode,
+              originTZ: stationMetaData.timeZones[rawTrainData.OrigCode],
+              destCode: rawTrainData.DestCode,
+              destTZ: stationMetaData.timeZones[rawTrainData.DestCode],
+              trainState: rawTrainData.TrainState,
+              velocity: +rawTrainData.Velocity,
+              statusMsg: rawTrainData.StatusMsg,
+              createdAt: parseDate(
+                rawTrainData.created_at,
+                rawTrainData.EventCode
+              ),
+              updatedAt: parseDate(
+                rawTrainData.updated_at,
+                rawTrainData.EventCode
+              ),
+              lastValTS: parseDate(
+                rawTrainData.LastValTS,
+                rawTrainData.EventCode
+              ),
+              objectID: rawTrainData.OBJECTID,
+            };
 
-          trains[rawTrainData.TrainNum] = trains[rawTrainData.TrainNum] || [];
-          trains[rawTrainData.TrainNum].push(train);
+            trains[rawTrainData.TrainNum] = trains[rawTrainData.TrainNum] || [];
+            trains[rawTrainData.TrainNum].push(train);
+          });
+
+          amtrakerCache.setTrains(trains);
+          console.log("set trains cache");
+        })
+        .catch((e) => {
+          console.log("Error fetching train data:", e);
         });
-
-        amtrakerCache.setTrains(trains);
-        console.log("set trains cache");
-      })
-      .catch((e) => {
-        console.log("Error fetching train data:", e);
-      });
-  })
-  .catch((e) => {
-    console.log("Error fetching station data:", e);
-  });
+    })
+    .catch((e) => {
+      console.log("Error fetching station data:", e);
+    });
 };
 
 updateTrains();
 
-//schedule.scheduleJob("*/3 * * * *", updateTrains);
+schedule.scheduleJob("*/3 * * * *", updateTrains);
 
 Bun.serve({
   port: 80,
   fetch(request) {
     let url = request.url.split("http://0.0.0.0")[1];
 
-    if (url.startsWith('/v2')) {
-      url = url.replace('/v2', '/v3');
+    if (url.startsWith("/v2")) {
+      url = url.replace("/v2", "/v3");
     }
 
     if (url === "/") {
@@ -342,16 +345,15 @@ Bun.serve({
     }
 
     if (url === "/docs") {
-      return Response.redirect('https://amtrak.piemadd.com', 302);
+      return Response.redirect("https://amtrak.piemadd.com", 302);
     }
 
     if (url === "/v3") {
-      return Response.redirect('/v3/trains', 301);
+      return Response.redirect("/v3/trains", 301);
     }
 
     if (url.startsWith("/v3/trains")) {
       const trainNum = url.split("/")[3];
-      console.log(trainNum);
 
       const trains = amtrakerCache.getTrains();
 
@@ -391,12 +393,15 @@ Bun.serve({
       const stations = amtrakerCache.getStations();
 
       if (stationCode === undefined) {
+        console.log("stations");
         return new Response(JSON.stringify(stations), {
           headers: {
             "content-type": "application/json",
           },
         });
       }
+
+      console.log("station code", stationCode);
 
       if (stations[stationCode] == null) {
         return new Response(JSON.stringify([]), {
@@ -417,5 +422,9 @@ Bun.serve({
         }
       );
     }
+
+    return new Response("Not found", {
+      status: 404,
+    });
   },
 });
