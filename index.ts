@@ -83,7 +83,6 @@ const parseDate = (badDate: string | null, code: string | null) => {
     }
   } catch (e) {
     console.log("Couldn't parse date:", badDate, code);
-    console.log(stationMetaData.timeZones[code]);
     return null;
   }
 };
@@ -278,11 +277,16 @@ const updateTrains = async () => {
               parseRawStation(station)
             );
 
+            if (stations.length === 0) {
+              console.log("No stations found for train:", rawTrainData.TrainNum);
+              return;
+            }
+
             let train: Train = {
               routeName: rawTrainData.RouteName,
               trainNum: +rawTrainData.TrainNum,
               trainID: `${+rawTrainData.TrainNum}-${new Date(
-                parseDate(stations[0].schDep, stations[0].code)
+                stations[0].schDep
               ).getDate()}`,
               stations: stations,
               heading: rawTrainData.Heading,
@@ -376,7 +380,7 @@ Bun.serve({
         });
       }
 
-      if (trainNum.split('-').length === 2) {
+      if (trainNum.split("-").length === 2) {
         const trainsArr = trains[trainNum];
 
         for (let i = 0; i < trainsArr.length; i++) {

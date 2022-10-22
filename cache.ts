@@ -46,7 +46,7 @@ export default class cache {
   }
 
   setStation(code: string, data: StationMeta) {
-    console.log('setting', code)
+    //console.log('setting', code)
     this.stations[code] = data;
   }
 
