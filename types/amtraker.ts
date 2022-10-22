@@ -1,6 +1,7 @@
 export interface Train {
   routeName: string;
   trainNum: number;
+  trainID: string;
   stations: Station[];
   heading: Heading;
   eventCode: string;
@@ -47,6 +48,20 @@ export interface Station {
   status: StationStatus;
 }
 
+export interface StationMeta {
+  name: string;
+  code: string;
+  tz: string;
+  lat: number;
+  lon: number;
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  zip: number;
+  trains: string[];
+}
+
 export enum StationStatus {
   Enroute = "Enroute",
   Station = "Station",
@@ -59,5 +74,5 @@ export interface TrainResponse {
 }
 
 export interface StationResponse {
-  [key: string]: Station;
+  [key: string]: StationMeta;
 }

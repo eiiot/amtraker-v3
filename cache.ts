@@ -1,22 +1,55 @@
-import { StationResponse, TrainResponse } from "./types/amtraker";
+import { StationMeta, StationResponse, Train, TrainResponse } from "./types/amtraker";
+import * as fs from "fs";
 
 export default class cache {
   trains: TrainResponse;
+  stations: StationResponse;
 
   constructor() {
     this.trains = {};
+    this.stations = {};
     return;
   }
 
-  get(key: string) {
-    return this[key];
+  getTrains() {
+    return this.trains;
   }
 
-  setTrains(key: string, data: TrainResponse) {
-    this[key] = data;
+  getStation(code: string) {
+    return this.stations[code];
   }
 
-  setStations(key: string, data: StationResponse) {
-    this[key] = data;
+  getStations() {
+    return this.stations;
+  }
+
+  setTrains(data: TrainResponse) {
+    fs.writeFileSync('cache.json', JSON.stringify(data, null, 2));
+
+    Object.keys(data).forEach((key) => {
+      data[key].forEach((train) => {
+        train.stations.forEach((station) => {
+          const stationData = this.getStation(station.code);
+          //console.log(stationData)
+
+          if (stationData && !stationData.trains.includes(train.trainID)) {
+            stationData.trains.push(train.trainID);
+          }
+
+          this.setStation(station.code, stationData);
+        })
+      })
+    })
+
+    this.trains = data;
+  }
+
+  setStation(code: string, data: StationMeta) {
+    console.log('setting', code)
+    this.stations[code] = data;
+  }
+
+  setStations(data: StationResponse) {
+    this.stations = data;
   }
 }

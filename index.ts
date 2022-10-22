@@ -4,7 +4,13 @@ import * as moment from "moment-timezone";
 import * as schedule from "node-schedule";
 
 import { Amtrak, RawStation } from "./types/amtrak";
-import { Train, Station, StationStatus, TrainResponse } from "./types/amtraker";
+import {
+  Train,
+  Station,
+  StationStatus,
+  TrainResponse,
+  StationResponse,
+} from "./types/amtraker";
 
 import * as trainMetaData from "./data/trains";
 import * as stationMetaData from "./data/stations";
@@ -68,7 +74,7 @@ const parseDate = (badDate: string | null, code: string | null) => {
     let fixedDate = moment(badDate, [
       "MM-DD-YYYY HH:mm:ss",
       "MM-DD-YYYY hh:mm:ss A",
-    ]).tz(stationMetaData.timeZones[code][0] ?? "");
+    ]).tz(stationMetaData.timeZones[code] ?? "");
     if (fixedDate.isValid()) {
       return fixedDate.format();
     } else {
@@ -77,6 +83,7 @@ const parseDate = (badDate: string | null, code: string | null) => {
     }
   } catch (e) {
     console.log("Couldn't parse date:", badDate, code);
+    console.log(stationMetaData.timeZones[code]);
     return null;
   }
 };
@@ -222,77 +229,183 @@ const parseRawStation = (rawStation: RawStation) => {
 };
 
 const updateTrains = async () => {
+  let stations: StationResponse = {};
   console.log("Updating trains...");
-  fetchTrainsForCleaning()
-    .then((amtrakData) => {
-      let trains: TrainResponse = {};
+  fetchStationsForCleaning().then((stationData) => {
+    stationData.forEach((station) => {
+      console.log(station)
+      console.log('upper', station.properties.Code)
+      amtrakerCache.setStation(station.properties.Code, {
+        name: stationMetaData.stationNames[station.properties.Code],
+        code: station.properties.Code,
+        tz: stationMetaData.timeZones[station.properties.Code],
+        lat: station.properties.lat,
+        lon: station.properties.lon,
+        address1: station.properties.Address1,
+        address2: station.properties.Address2,
+        city: station.properties.City,
+        state: station.properties.State,
+        zip: station.properties.Zipcode,
+        trains: [],
+      });
+    });
 
-      amtrakData.forEach((property) => {
-        let rawTrainData = property.properties;
+    fetchTrainsForCleaning()
+      .then((amtrakData) => {
+        let trains: TrainResponse = {};
 
-        let rawStations: Array<RawStation> = [];
+        amtrakData.forEach((property) => {
+          let rawTrainData = property.properties;
 
-        for (let i = 1; i < 41; i++) {
-          let station = rawTrainData[`Station${i}`];
-          if (station == undefined) {
-            continue;
-          } else {
-            try {
-              let rawStation = JSON.parse(station);
-              if (rawStation.code === "CBN") continue;
-              rawStations.push(rawStation);
-            } catch (e) {
-              console.log("Error parsing station:", e);
+          let rawStations: Array<RawStation> = [];
+
+          for (let i = 1; i < 41; i++) {
+            let station = rawTrainData[`Station${i}`];
+            if (station == undefined) {
               continue;
+            } else {
+              try {
+                let rawStation = JSON.parse(station);
+                if (rawStation.code === "CBN") continue;
+                rawStations.push(rawStation);
+              } catch (e) {
+                console.log("Error parsing station:", e);
+                continue;
+              }
             }
           }
-        }
 
-        let stations = rawStations.map((station) => parseRawStation(station));
+          let stations = rawStations.map((station) => parseRawStation(station));
 
-        let train: Train = {
-          routeName: rawTrainData.RouteName,
-          trainNum: +rawTrainData.TrainNum,
-          stations: stations,
-          heading: rawTrainData.Heading,
-          eventCode: rawTrainData.EventCode,
-          origCode: rawTrainData.OrigCode,
-          originTZ: stationMetaData.timeZones[rawTrainData.OrigCode],
-          destCode: rawTrainData.DestCode,
-          destTZ: stationMetaData.timeZones[rawTrainData.DestCode],
-          trainState: rawTrainData.TrainState,
-          velocity: +rawTrainData.Velocity,
-          statusMsg: rawTrainData.StatusMsg,
-          createdAt: parseDate(rawTrainData.created_at, rawTrainData.EventCode),
-          updatedAt: parseDate(rawTrainData.updated_at, rawTrainData.EventCode),
-          lastValTS: parseDate(rawTrainData.LastValTS, rawTrainData.EventCode),
-          objectID: rawTrainData.OBJECTID,
-        };
+          let train: Train = {
+            routeName: rawTrainData.RouteName,
+            trainNum: +rawTrainData.TrainNum,
+            trainID: `${+rawTrainData.TrainNum}-${new Date(
+              parseDate(rawTrainData.created_at, rawTrainData.EventCode)
+            ).getDate()}`,
+            stations: stations,
+            heading: rawTrainData.Heading,
+            eventCode: rawTrainData.EventCode,
+            origCode: rawTrainData.OrigCode,
+            originTZ: stationMetaData.timeZones[rawTrainData.OrigCode],
+            destCode: rawTrainData.DestCode,
+            destTZ: stationMetaData.timeZones[rawTrainData.DestCode],
+            trainState: rawTrainData.TrainState,
+            velocity: +rawTrainData.Velocity,
+            statusMsg: rawTrainData.StatusMsg,
+            createdAt: parseDate(
+              rawTrainData.created_at,
+              rawTrainData.EventCode
+            ),
+            updatedAt: parseDate(
+              rawTrainData.updated_at,
+              rawTrainData.EventCode
+            ),
+            lastValTS: parseDate(
+              rawTrainData.LastValTS,
+              rawTrainData.EventCode
+            ),
+            objectID: rawTrainData.OBJECTID,
+          };
 
-        trains[rawTrainData.TrainNum] = trains[rawTrainData.TrainNum] || [];
-        trains[rawTrainData.TrainNum].push(train);
+          trains[rawTrainData.TrainNum] = trains[rawTrainData.TrainNum] || [];
+          trains[rawTrainData.TrainNum].push(train);
+        });
+
+        amtrakerCache.setTrains(trains);
+        console.log("set trains cache");
+      })
+      .catch((e) => {
+        console.log("Error fetching train data:", e);
       });
-
-      amtrakerCache.setTrains("trains", trains);
-      console.log('set trains cache')
-    })
-    .catch((e) => {
-      console.log("Error fetching train data:", e);
-    });
+  })
+  .catch((e) => {
+    console.log("Error fetching station data:", e);
+  });
 };
 
 updateTrains();
 
-schedule.scheduleJob("*/3 * * * *", updateTrains);
+//schedule.scheduleJob("*/3 * * * *", updateTrains);
 
 Bun.serve({
-  port: 3000,
+  port: 80,
   fetch(request) {
-    let data = amtrakerCache.get("trains");
-    return new Response(JSON.stringify(data), {
-      headers: {
-        "content-type": "application/json;charset=UTF-8",
-      },
-    });
+    const url = request.url.split("http://0.0.0.0")[1];
+
+    if (url === "/") {
+      return new Response(
+        "Welcome to the Amtreker API! Docs should be available at /docs, if I remembered to add them..."
+      );
+    }
+
+    if (url.startsWith("/trains")) {
+      const trainNum = url.split("/")[2];
+      console.log(trainNum);
+
+      const trains = amtrakerCache.getTrains();
+
+      if (trainNum === undefined) {
+        console.log("all trains");
+        return new Response(JSON.stringify(trains), {
+          headers: {
+            "content-type": "application/json",
+          },
+        });
+      }
+
+      console.log("train num", trainNum);
+
+      if (trains[trainNum] == null) {
+        return new Response(JSON.stringify([]), {
+          headers: {
+            "content-type": "application/json",
+          },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({
+          [trainNum]: trains[trainNum],
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      );
+    }
+
+    if (url.startsWith("/stations")) {
+      const stationCode = url.split("/")[2];
+      const stations = amtrakerCache.getStations();
+
+      if (stationCode === undefined) {
+        return new Response(JSON.stringify(stations), {
+          headers: {
+            "content-type": "application/json",
+          },
+        });
+      }
+
+      if (stations[stationCode] == null) {
+        return new Response(JSON.stringify([]), {
+          headers: {
+            "content-type": "application/json",
+          },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({
+          [stationCode]: stations[stationCode],
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      );
+    }
   },
 });
