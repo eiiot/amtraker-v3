@@ -1,14 +1,10 @@
-
+# screw proper configs
 [phases.setup]
-nixPkgs = ['unzip']
-cmds = [
-    'curl https://bun.sh/install | bash',
-    'export BUN_INSTALL="$HOME/.bun"',
-    'export PATH="$BUN_INSTALL/bin:$PATH"',
-]
+cmds = []
 
-[phases.install    ]
-cmds = ['bun install']
+[phases.install]
+cmds = []
 
 [start]
-cmd = 'bun index.ts'
+nixPkgs = ['unzip']
+cmd = 'bash run.sh'
