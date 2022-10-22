@@ -233,8 +233,6 @@ const updateTrains = async () => {
   console.log("Updating trains...");
   fetchStationsForCleaning().then((stationData) => {
     stationData.forEach((station) => {
-      console.log(station)
-      console.log('upper', station.properties.Code)
       amtrakerCache.setStation(station.properties.Code, {
         name: stationMetaData.stationNames[station.properties.Code],
         code: station.properties.Code,
@@ -339,8 +337,16 @@ Bun.serve({
       );
     }
 
-    if (url.startsWith("/trains")) {
-      const trainNum = url.split("/")[2];
+    if (url === "/docs") {
+      return Response.redirect('https://amtrak.piemadd.com', 302);
+    }
+
+    if (url === "/v2") {
+      return Response.redirect('/v2/trains', 301);
+    }
+
+    if (url.startsWith("/v2/trains")) {
+      const trainNum = url.split("/")[3];
       console.log(trainNum);
 
       const trains = amtrakerCache.getTrains();
@@ -376,8 +382,8 @@ Bun.serve({
       );
     }
 
-    if (url.startsWith("/stations")) {
-      const stationCode = url.split("/")[2];
+    if (url.startsWith("/v2/stations")) {
+      const stationCode = url.split("/")[3];
       const stations = amtrakerCache.getStations();
 
       if (stationCode === undefined) {

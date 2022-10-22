@@ -24,7 +24,8 @@ export default class cache {
   }
 
   setTrains(data: TrainResponse) {
-    fs.writeFileSync('cache.json', JSON.stringify(data, null, 2));
+    console.log('setting trains')
+    //fs.writeFileSync('cache.json', JSON.stringify(data, null, 2));
 
     Object.keys(data).forEach((key) => {
       data[key].forEach((train) => {
