@@ -329,7 +329,11 @@ updateTrains();
 Bun.serve({
   port: 80,
   fetch(request) {
-    const url = request.url.split("http://0.0.0.0")[1];
+    let url = request.url.split("http://0.0.0.0")[1];
+
+    if (url.startsWith('/v2')) {
+      url = url.replace('/v2', '/v3');
+    }
 
     if (url === "/") {
       return new Response(
@@ -341,11 +345,11 @@ Bun.serve({
       return Response.redirect('https://amtrak.piemadd.com', 302);
     }
 
-    if (url === "/v2") {
-      return Response.redirect('/v2/trains', 301);
+    if (url === "/v3") {
+      return Response.redirect('/v3/trains', 301);
     }
 
-    if (url.startsWith("/v2/trains")) {
+    if (url.startsWith("/v3/trains")) {
       const trainNum = url.split("/")[3];
       console.log(trainNum);
 
@@ -382,7 +386,7 @@ Bun.serve({
       );
     }
 
-    if (url.startsWith("/v2/stations")) {
+    if (url.startsWith("/v3/stations")) {
       const stationCode = url.split("/")[3];
       const stations = amtrakerCache.getStations();
 
