@@ -2,6 +2,8 @@ export interface Train {
   routeName: string;
   trainNum: number;
   trainID: string;
+  lat: number;
+  lon: number;
   stations: Station[];
   heading: Heading;
   eventCode: string;

@@ -254,6 +254,7 @@ const updateTrains = async () => {
 
           amtrakData.forEach((property) => {
             let rawTrainData = property.properties;
+            //console.log(property)
 
             let rawStations: Array<RawStation> = [];
 
@@ -291,6 +292,8 @@ const updateTrains = async () => {
               trainID: `${+rawTrainData.TrainNum}-${new Date(
                 stations[0].schDep
               ).getDate()}`,
+              lat: property.geometry.coordinates[1],
+              lon: property.geometry.coordinates[0],
               stations: stations,
               heading: rawTrainData.Heading,
               eventCode: rawTrainData.EventCode,
