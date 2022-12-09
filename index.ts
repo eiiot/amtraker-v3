@@ -371,6 +371,7 @@ Bun.serve({
         console.log("all trains");
         return new Response(JSON.stringify(trains), {
           headers: {
+            "Access-Control-Allow-Origin": "*", // CORS
             "content-type": "application/json",
           },
         });
@@ -389,6 +390,7 @@ Bun.serve({
               JSON.stringify({ [trainNum.split("-")[0]]: [trainsArr[i]] }),
               {
                 headers: {
+                  "Access-Control-Allow-Origin": "*", // CORS
                   "content-type": "application/json",
                 },
               }
@@ -400,6 +402,7 @@ Bun.serve({
       if (trains[trainNum] == null) {
         return new Response(JSON.stringify([]), {
           headers: {
+            "Access-Control-Allow-Origin": "*", // CORS
             "content-type": "application/json",
           },
         });
@@ -411,6 +414,7 @@ Bun.serve({
         }),
         {
           headers: {
+            "Access-Control-Allow-Origin": "*", // CORS
             "content-type": "application/json",
           },
         }
@@ -425,6 +429,7 @@ Bun.serve({
         console.log("stations");
         return new Response(JSON.stringify(stations), {
           headers: {
+            "Access-Control-Allow-Origin": "*", // CORS
             "content-type": "application/json",
           },
         });
@@ -435,6 +440,7 @@ Bun.serve({
       if (stations[stationCode] == null) {
         return new Response(JSON.stringify([]), {
           headers: {
+            "Access-Control-Allow-Origin": "*", // CORS
             "content-type": "application/json",
           },
         });
@@ -446,6 +452,7 @@ Bun.serve({
         }),
         {
           headers: {
+            "Access-Control-Allow-Origin": "*", // CORS
             "content-type": "application/json",
           },
         }
