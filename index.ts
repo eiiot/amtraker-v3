@@ -294,6 +294,7 @@ const updateTrains = async () => {
               ).getDate()}`,
               lat: property.geometry.coordinates[1],
               lon: property.geometry.coordinates[0],
+              trainTimely: (stations.find((station) => station.code === rawTrainData.EventCode) || { arrCmnt: "Unknown" }).arrCmnt,
               stations: stations,
               heading: rawTrainData.Heading,
               eventCode: rawTrainData.EventCode,

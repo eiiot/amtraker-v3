@@ -4,6 +4,7 @@ export interface Train {
   trainID: string;
   lat: number;
   lon: number;
+  trainTimely: string;
   stations: Station[];
   heading: Heading;
   eventCode: string;
