@@ -12,7 +12,7 @@ import {
   StationResponse,
 } from "./types/amtraker";
 
-import * as trainMetaData from "./data/trains";
+import { trainNames } from "./data/trains";
 import * as stationMetaData from "./data/stations";
 import cache from "./cache";
 
@@ -287,7 +287,7 @@ const updateTrains = async () => {
             }
 
             let train: Train = {
-              routeName: trainMetaData[+rawTrainData.TrainNum],
+              routeName: trainNames[+rawTrainData.TrainNum],
               trainNum: +rawTrainData.TrainNum,
               trainID: `${+rawTrainData.TrainNum}-${new Date(
                 stations[0].schDep
