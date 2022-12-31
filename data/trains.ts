@@ -1,4 +1,3 @@
-//so what if im using strings for the keys? sugma balz lol
 export const trainNames = {
   1: "Sunset Limited",
   2: "Sunset Limited",
