@@ -287,7 +287,7 @@ const updateTrains = async () => {
             }
 
             let train: Train = {
-              routeName: trainNames[+rawTrainData.TrainNum],
+              routeName: trainNames[+rawTrainData.TrainNum] ? trainNames[+rawTrainData.TrainNum] : +rawTrainData.RouteName,
               trainNum: +rawTrainData.TrainNum,
               trainID: `${+rawTrainData.TrainNum}-${new Date(
                 stations[0].schDep
