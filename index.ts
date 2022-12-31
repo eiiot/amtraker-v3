@@ -67,20 +67,53 @@ const fetchStationsForCleaning = async () => {
     .features;
 };
 
+const now = new Date();
+const year = now.getFullYear();
+let dst_start = new Date(year, 2, 14);
+let dst_end = new Date(year, 10, 7);
+dst_start.setDate(14 - dst_start.getDay()); // adjust date to 2nd Sunday
+dst_end.setDate(7 - dst_end.getDay()); // adjust date to the 1st Sunday
+
+const isDST = Number(now >= dst_start && now < dst_end);
+
 const parseDate = (badDate: string | null, code: string | null) => {
   if (badDate == null || code == null) return null;
 
+  //first is standard time, second is daylight savings
+  const offsets = {
+    "America/New_York": ["-05:00", "-04:00"],
+    "America/Detroit": ["-05:00", "-04:00"],
+    "America/Chicago": ["-06:00", "-05:00"],
+    "America/Denver": ["-07:00", "-06:00"],
+    "America/Phoenix": ["-07:00", "-07:00"],
+    "America/Los_Angeles": ["-08:00", "-07:00"],
+    "America/Boise": ["-07:00", "-06:00"],
+    "America/Toronto": ["-05:00", "-04:00"],
+    "America/Indiana/Indianapolis": ["-05:00", "-04:00"],
+    "America/Kentucky/Louisville": ["-05:00", "-04:00"],
+    "America/Vancouver": ["-08:00", "-07:00"],
+  };
+
+  const timeZone = stationMetaData.timeZones[code] ?? "";
+
   try {
-    let fixedDate = moment(badDate, [
-      "MM-DD-YYYY HH:mm:ss",
-      "MM-DD-YYYY hh:mm:ss A",
-    ]).tz(stationMetaData.timeZones[code] ?? "");
-    if (fixedDate.isValid()) {
-      return fixedDate.format();
-    } else {
-      console.log("date was not valid for", code);
-      return null;
+    const dateArr = badDate.split(" ");
+    let MDY = dateArr[0].split("/").map((num) => Number(num));
+    let HMS = dateArr[1].split(":").map((num) => Number(num));
+
+    if (dateArr.length == 3 && dateArr[2] == "PM") {
+      HMS[0] += 12; //adds 12 hour difference for time zone
     }
+
+    const month = MDY[0].toString().padStart(2, "0");
+    const date = MDY[1].toString().padStart(2, "0");
+    const year = MDY[2].toString().padStart(4, "0");
+
+    const hour = HMS[0].toString().padStart(2, "0");
+    const minute = HMS[1].toString().padStart(2, "0");
+    const second = HMS[2].toString().padStart(2, "0");
+
+    return `${year}-${month}-${date}T${hour}:${minute}:${second}${offsets[timeZone][isDST]}`;
   } catch (e) {
     console.log("Couldn't parse date:", badDate, code);
     return null;
@@ -287,14 +320,20 @@ const updateTrains = async () => {
             }
 
             let train: Train = {
-              routeName: trainNames[+rawTrainData.TrainNum] ? trainNames[+rawTrainData.TrainNum] : rawTrainData.RouteName,
+              routeName: trainNames[+rawTrainData.TrainNum]
+                ? trainNames[+rawTrainData.TrainNum]
+                : rawTrainData.RouteName,
               trainNum: +rawTrainData.TrainNum,
               trainID: `${+rawTrainData.TrainNum}-${new Date(
                 stations[0].schDep
               ).getDate()}`,
               lat: property.geometry.coordinates[1],
               lon: property.geometry.coordinates[0],
-              trainTimely: (stations.find((station) => station.code === rawTrainData.EventCode) || { arrCmnt: "Unknown" }).arrCmnt,
+              trainTimely: (
+                stations.find(
+                  (station) => station.code === rawTrainData.EventCode
+                ) || { arrCmnt: "Unknown" }
+              ).arrCmnt,
               stations: stations,
               heading: rawTrainData.Heading,
               eventCode: rawTrainData.EventCode,
