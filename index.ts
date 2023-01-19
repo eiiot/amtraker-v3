@@ -335,8 +335,8 @@ const updateTrains = async () => {
                 ) || { arrCmnt: "Unknown" }
               ).arrCmnt,
               stations: stations,
-              heading: rawTrainData.Heading,
-              eventCode: rawTrainData.EventCode,
+              heading: rawTrainData.Heading ? rawTrainData.Heading : 'N',
+              eventCode: rawTrainData.EventCode ? rawTrainData.EventCode : stations[0].code,
               origCode: rawTrainData.OrigCode,
               originTZ: stationMetaData.timeZones[rawTrainData.OrigCode],
               destCode: rawTrainData.DestCode,
@@ -347,15 +347,24 @@ const updateTrains = async () => {
               createdAt: parseDate(
                 rawTrainData.created_at,
                 rawTrainData.EventCode
-              ),
+              ) ? parseDate(
+                rawTrainData.created_at,
+                rawTrainData.EventCode
+              ) : stations[0].schDep,
               updatedAt: parseDate(
                 rawTrainData.updated_at,
                 rawTrainData.EventCode
-              ),
+              ) ? parseDate(
+                rawTrainData.updated_at,
+                rawTrainData.EventCode
+              ) : stations[0].schDep,
               lastValTS: parseDate(
                 rawTrainData.LastValTS,
                 rawTrainData.EventCode
-              ),
+              ) ? parseDate(
+                rawTrainData.LastValTS,
+                rawTrainData.EventCode
+              ) : stations[0].schDep,
               objectID: rawTrainData.OBJECTID,
             };
 
