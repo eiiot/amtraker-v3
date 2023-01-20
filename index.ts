@@ -199,6 +199,7 @@ const parseRawStation = (rawStation: RawStation) => {
     // for all other stations
     if (rawStation.estarr != null && rawStation.estdep != null) {
       // if the train is enroute
+      //console.log('enroute')
       status = StationStatus.Enroute;
       arr = parseDate(rawStation.estarr, rawStation.code);
       dep = parseDate(rawStation.estdep, rawStation.code);
@@ -214,6 +215,7 @@ const parseRawStation = (rawStation: RawStation) => {
       );
     } else if (rawStation.postarr != null && rawStation.estdep != null) {
       // if the train has arrived but not departed
+      //console.log('not departed')
       status = StationStatus.Station;
       arr = parseDate(rawStation.postarr, rawStation.code);
       dep = parseDate(rawStation.estdep, rawStation.code);
@@ -227,8 +229,9 @@ const parseRawStation = (rawStation: RawStation) => {
         rawStation.estdep,
         rawStation.code
       );
-    } else if (rawStation.postdep != null) {
+    } else if (rawStation.postdep != null || rawStation.postcmnt != null) {
       // if the train has departed
+      //console.log('has departed')
       status = StationStatus.Departed;
       arr = parseDate(rawStation.postarr, rawStation.code);
       dep = parseDate(rawStation.postdep, rawStation.code);
@@ -242,6 +245,8 @@ const parseRawStation = (rawStation: RawStation) => {
         rawStation.postdep,
         rawStation.code
       );
+    } else {
+      console.log('wtf goin on??????')
     }
   }
 
@@ -307,9 +312,10 @@ const updateTrains = async () => {
               }
             }
 
-            let stations = rawStations.map((station) =>
-              parseRawStation(station)
-            );
+            let stations = rawStations.map((station) => {
+              const result = parseRawStation(station);
+              return result;
+            });
 
             if (stations.length === 0) {
               console.log(
@@ -335,8 +341,10 @@ const updateTrains = async () => {
                 ) || { arrCmnt: "Unknown" }
               ).arrCmnt,
               stations: stations,
-              heading: rawTrainData.Heading ? rawTrainData.Heading : 'N',
-              eventCode: rawTrainData.EventCode ? rawTrainData.EventCode : stations[0].code,
+              heading: rawTrainData.Heading ? rawTrainData.Heading : "N",
+              eventCode: rawTrainData.EventCode
+                ? rawTrainData.EventCode
+                : stations[0].code,
               origCode: rawTrainData.OrigCode,
               originTZ: stationMetaData.timeZones[rawTrainData.OrigCode],
               destCode: rawTrainData.DestCode,
@@ -347,24 +355,21 @@ const updateTrains = async () => {
               createdAt: parseDate(
                 rawTrainData.created_at,
                 rawTrainData.EventCode
-              ) ? parseDate(
-                rawTrainData.created_at,
-                rawTrainData.EventCode
-              ) : stations[0].schDep,
+              )
+                ? parseDate(rawTrainData.created_at, rawTrainData.EventCode)
+                : stations[0].schDep,
               updatedAt: parseDate(
                 rawTrainData.updated_at,
                 rawTrainData.EventCode
-              ) ? parseDate(
-                rawTrainData.updated_at,
-                rawTrainData.EventCode
-              ) : stations[0].schDep,
+              )
+                ? parseDate(rawTrainData.updated_at, rawTrainData.EventCode)
+                : stations[0].schDep,
               lastValTS: parseDate(
                 rawTrainData.LastValTS,
                 rawTrainData.EventCode
-              ) ? parseDate(
-                rawTrainData.LastValTS,
-                rawTrainData.EventCode
-              ) : stations[0].schDep,
+              )
+                ? parseDate(rawTrainData.LastValTS, rawTrainData.EventCode)
+                : stations[0].schDep,
               objectID: rawTrainData.OBJECTID,
             };
 
@@ -430,10 +435,8 @@ Bun.serve({
 
       if (trainNum.split("-").length === 2) {
         const trainsArr = trains[trainNum.split("-")[0]];
-        console.log(trainsArr);
 
         for (let i = 0; i < trainsArr.length; i++) {
-          console.log(trainNum, trainsArr[i].trainID);
           if (trainsArr[i].trainID === trainNum) {
             return new Response(
               JSON.stringify({ [trainNum.split("-")[0]]: [trainsArr[i]] }),
@@ -483,8 +486,6 @@ Bun.serve({
           },
         });
       }
-
-      console.log("station code", stationCode);
 
       if (stations[stationCode] == null) {
         return new Response(JSON.stringify([]), {
