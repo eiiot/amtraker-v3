@@ -326,7 +326,8 @@ const updateTrains = async () => {
             let stations = rawStations.map((station) => {
               const result = parseRawStation(station);
 
-              if (result.code === "") { //whats debugging? lol
+              if (result.code === "" && rawTrainData.TrainNum == 0) {
+                //whats debugging? lol
                 console.log(station);
                 console.log(result);
               }
@@ -368,7 +369,7 @@ const updateTrains = async () => {
               destTZ: stationMetaData.timeZones[rawTrainData.DestCode],
               trainState: rawTrainData.TrainState,
               velocity: +rawTrainData.Velocity,
-              statusMsg: rawTrainData.StatusMsg,
+              statusMsg: (stations.filter((station) => !station.arr && !station.dep).length > 0) ? 'SERVICE DISRUPTION' : rawTrainData.StatusMsg,
               createdAt: parseDate(
                 rawTrainData.created_at,
                 rawTrainData.EventCode
