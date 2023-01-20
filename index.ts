@@ -137,7 +137,9 @@ const generateCmnt = (
   let hrs = duration.hours(),
     mins = duration.minutes();
 
-  let string = (hrs > 0 ? hrs + " Hours, " : "") + (mins + " Minutes ");
+  let string =
+    (hrs > 0 ? Math.abs(hrs) + " Hours, " : "") +
+    (Math.abs(mins) + " Minutes ");
 
   if (mins < 5 && earlyOrLate === "Late") {
     return "On Time";
@@ -157,6 +159,7 @@ const parseRawStation = (rawStation: RawStation) => {
     // is this the first station
     if (rawStation.postdep != null) {
       // if the train has departed
+      //console.log("has departed first station");
       status = StationStatus.Departed;
       dep = parseDate(rawStation.postdep, rawStation.code);
       depCmnt = generateCmnt(
@@ -166,6 +169,7 @@ const parseRawStation = (rawStation: RawStation) => {
       );
     } else {
       // if the train hasn't departed
+      //console.log("has not departed first station");
       status = StationStatus.Station;
       dep = parseDate(rawStation.estdep, rawStation.code);
       depCmnt = generateCmnt(
@@ -174,10 +178,11 @@ const parseRawStation = (rawStation: RawStation) => {
         rawStation.code
       );
     }
-  } else if (rawStation.postarr == null && rawStation.postdep == null) {
+  } else if (rawStation.postarr == null) {
     // is this the last station
     if (rawStation.postarr != null) {
       // if the train has arrived
+      //console.log("has arrived last station");
       status = StationStatus.Station;
       arr = parseDate(rawStation.postarr, rawStation.code);
       arrCmnt = generateCmnt(
@@ -187,6 +192,7 @@ const parseRawStation = (rawStation: RawStation) => {
       );
     } else {
       // if the train is enroute
+      //console.log("enroute to last station");
       status = StationStatus.Enroute;
       arr = parseDate(rawStation.estarr, rawStation.code);
       arrCmnt = generateCmnt(
@@ -199,7 +205,7 @@ const parseRawStation = (rawStation: RawStation) => {
     // for all other stations
     if (rawStation.estarr != null && rawStation.estdep != null) {
       // if the train is enroute
-      //console.log('enroute')
+      //console.log("enroute");
       status = StationStatus.Enroute;
       arr = parseDate(rawStation.estarr, rawStation.code);
       dep = parseDate(rawStation.estdep, rawStation.code);
@@ -215,7 +221,7 @@ const parseRawStation = (rawStation: RawStation) => {
       );
     } else if (rawStation.postarr != null && rawStation.estdep != null) {
       // if the train has arrived but not departed
-      //console.log('not departed')
+      //console.log("not departed");
       status = StationStatus.Station;
       arr = parseDate(rawStation.postarr, rawStation.code);
       dep = parseDate(rawStation.estdep, rawStation.code);
@@ -231,7 +237,7 @@ const parseRawStation = (rawStation: RawStation) => {
       );
     } else if (rawStation.postdep != null || rawStation.postcmnt != null) {
       // if the train has departed
-      //console.log('has departed')
+      //console.log("has departed");
       status = StationStatus.Departed;
       arr = parseDate(rawStation.postarr, rawStation.code);
       dep = parseDate(rawStation.postdep, rawStation.code);
@@ -246,7 +252,8 @@ const parseRawStation = (rawStation: RawStation) => {
         rawStation.code
       );
     } else {
-      console.log('wtf goin on??????')
+      console.log("wtf goin on??????");
+      console.log(rawStation);
     }
   }
 
@@ -255,12 +262,16 @@ const parseRawStation = (rawStation: RawStation) => {
     code: rawStation.code,
     tz: stationMetaData.timeZones[rawStation.code],
     bus: rawStation.bus,
-    schArr: parseDate(rawStation.scharr, rawStation.code),
-    schDep: parseDate(rawStation.schdep, rawStation.code),
-    arr: arr,
-    dep: dep,
-    arrCmnt: arrCmnt,
-    depCmnt: depCmnt,
+    schArr:
+      parseDate(rawStation.scharr, rawStation.code) ??
+      parseDate(rawStation.schdep, rawStation.code),
+    schDep:
+      parseDate(rawStation.schdep, rawStation.code) ??
+      parseDate(rawStation.scharr, rawStation.code),
+    arr: arr ?? dep,
+    dep: dep ?? arr,
+    arrCmnt: arrCmnt ?? depCmnt,
+    depCmnt: depCmnt ?? arrCmnt,
     status: status,
   } as Station;
 };
@@ -314,6 +325,12 @@ const updateTrains = async () => {
 
             let stations = rawStations.map((station) => {
               const result = parseRawStation(station);
+
+              if (result.code === "") { //whats debugging? lol
+                console.log(station);
+                console.log(result);
+              }
+
               return result;
             });
 
