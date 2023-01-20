@@ -567,6 +567,15 @@ export const stationNames = {
 };
 
 export const timeZones = {
+  ABN: "America/New_York",
+  ACY: "America/New_York",
+  ATO: "America/New_York",
+  CRH: "America/New_York",
+  EGH: "America/New_York",
+  FAL: "America/New_York",
+  HTN: "America/New_York",
+  LDW: "America/New_York",
+  PNK: "America/New_York",
   AAM: "America/Detroit",
   ABA: "America/New_York",
   ABB: "America/Chicago",
