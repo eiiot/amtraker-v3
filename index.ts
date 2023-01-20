@@ -369,7 +369,18 @@ const updateTrains = async () => {
               destTZ: stationMetaData.timeZones[rawTrainData.DestCode],
               trainState: rawTrainData.TrainState,
               velocity: +rawTrainData.Velocity,
-              statusMsg: (stations.filter((station) => !station.arr && !station.dep).length > 0) ? 'SERVICE DISRUPTION' : rawTrainData.StatusMsg,
+              statusMsg:
+                stations.filter(
+                  (station) =>
+                    !station.arr &&
+                    !station.dep &&
+                    station.code ===
+                      (rawTrainData.EventCode
+                        ? rawTrainData.EventCode
+                        : stations[0].code)
+                ).length > 0
+                  ? "SERVICE DISRUPTION"
+                  : rawTrainData.StatusMsg,
               createdAt: parseDate(
                 rawTrainData.created_at,
                 rawTrainData.EventCode
