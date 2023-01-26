@@ -465,6 +465,15 @@ Bun.serve({
       if (trainNum.split("-").length === 2) {
         const trainsArr = trains[trainNum.split("-")[0]];
 
+        if (trainsArr == undefined) {
+          return new Response(JSON.stringify([]), {
+            headers: {
+              "Access-Control-Allow-Origin": "*", // CORS
+              "content-type": "application/json",
+            },
+          });
+        }
+
         for (let i = 0; i < trainsArr.length; i++) {
           if (trainsArr[i].trainID === trainNum) {
             return new Response(
@@ -479,15 +488,12 @@ Bun.serve({
           }
         }
 
-        return new Response(
-          JSON.stringify([]),
-          {
-            headers: {
-              "Access-Control-Allow-Origin": "*", // CORS
-              "content-type": "application/json",
-            },
-          }
-        );
+        return new Response(JSON.stringify([]), {
+          headers: {
+            "Access-Control-Allow-Origin": "*", // CORS
+            "content-type": "application/json",
+          },
+        });
       }
 
       if (trains[trainNum] == null) {
