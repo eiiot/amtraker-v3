@@ -478,6 +478,16 @@ Bun.serve({
             );
           }
         }
+
+        return new Response(
+          JSON.stringify([]),
+          {
+            headers: {
+              "Access-Control-Allow-Origin": "*", // CORS
+              "content-type": "application/json",
+            },
+          }
+        );
       }
 
       if (trains[trainNum] == null) {
