@@ -50,6 +50,7 @@ const fetchTrainsForCleaning = async () => {
     data.length
   );
   const privateKey = decrypt(encryptedPrivateKey, publicKey).split("|")[0];
+
   return JSON.parse(decrypt(mainContent, privateKey)).features;
 };
 
