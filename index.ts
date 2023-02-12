@@ -364,10 +364,24 @@ const updateTrains = async () => {
               eventCode: rawTrainData.EventCode
                 ? rawTrainData.EventCode
                 : stations[0].code,
+              eventTZ:
+                stationMetaData.timeZones[
+                  rawTrainData.EventCode
+                    ? rawTrainData.EventCode
+                    : stations[0].code
+                ],
+              eventName:
+                stationMetaData.stationNames[
+                  rawTrainData.EventCode
+                    ? rawTrainData.EventCode
+                    : stations[0].code
+                ],
               origCode: rawTrainData.OrigCode,
               originTZ: stationMetaData.timeZones[rawTrainData.OrigCode],
+              origName: stationMetaData.stationNames[rawTrainData.OrigCode],
               destCode: rawTrainData.DestCode,
               destTZ: stationMetaData.timeZones[rawTrainData.DestCode],
+              destName: stationMetaData.stationNames[rawTrainData.DestCode],
               trainState: rawTrainData.TrainState,
               velocity: +rawTrainData.Velocity,
               statusMsg:

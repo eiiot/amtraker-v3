@@ -8,10 +8,14 @@ export interface Train {
   stations: Station[];
   heading: Heading;
   eventCode: string;
+  eventTZ: string[];
+  eventName: string;
   origCode: string;
   originTZ: string[];
+  origName: string;
   destCode: string;
   destTZ: string[];
+  destName: string;
   trainState: TrainState;
   velocity: number;
   statusMsg: string;
