@@ -16,6 +16,12 @@ import { trainNames } from "./data/trains";
 import * as stationMetaData from "./data/stations";
 import cache from "./cache";
 
+let staleData = {
+  avgLastUpdate: 0,
+  activeTrains: 0,
+  stale: false,
+};
+
 const trainUrl =
   "https://maps.amtrak.com/services/MapDataService/trains/getTrainsData";
 const stationUrl =
@@ -300,6 +306,12 @@ const updateTrains = async () => {
 
       fetchTrainsForCleaning()
         .then((amtrakData) => {
+          const now: number = new Date().valueOf();
+
+          staleData.activeTrains = 0;
+          staleData.avgLastUpdate = 0;
+          staleData.stale = false;
+
           let trains: TrainResponse = {};
 
           amtrakData.forEach((property) => {
@@ -419,7 +431,21 @@ const updateTrains = async () => {
 
             trains[rawTrainData.TrainNum] = trains[rawTrainData.TrainNum] || [];
             trains[rawTrainData.TrainNum].push(train);
+
+            if (train.trainState === "Active") {
+              staleData.avgLastUpdate +=
+                now - new Date(train.updatedAt).valueOf();
+              staleData.activeTrains++;
+            }
           });
+
+          staleData.avgLastUpdate =
+            staleData.avgLastUpdate / staleData.activeTrains;
+
+          if (staleData.avgLastUpdate > 1000 * 60 * 15) {
+            console.log("Data is stale, setting...");
+            staleData.stale = true;
+          }
 
           amtrakerCache.setTrains(trains);
           console.log("set trains cache");
@@ -458,6 +484,15 @@ Bun.serve({
 
     if (url === "/v3") {
       return Response.redirect("/v3/trains", 301);
+    }
+
+    if (url === "/v3/stale") {
+      return new Response(JSON.stringify(staleData), {
+        headers: {
+          "Access-Control-Allow-Origin": "*", // CORS
+          "content-type": "application/json",
+        },
+      });
     }
 
     if (url.startsWith("/v3/trains")) {
