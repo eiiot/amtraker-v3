@@ -83,3 +83,9 @@ export interface TrainResponse {
 export interface StationResponse {
   [key: string]: StationMeta;
 }
+
+export interface StaleData {
+  avgLastUpdate: number;
+  activeTrains: number;
+  stale: boolean;
+}

@@ -101,7 +101,7 @@ const parseDate = (badDate: string | null, code: string | null) => {
     "America/Vancouver": ["-08:00", "-07:00"],
   };
 
-  const timeZone = stationMetaData.timeZones[code] ?? "";
+  const timeZone = stationMetaData.timeZones[code] ?? "America/New_York";
 
   try {
     const dateArr = badDate.split(" ");
@@ -408,18 +408,12 @@ const updateTrains = async () => {
                 ).length > 0
                   ? "SERVICE DISRUPTION"
                   : rawTrainData.StatusMsg,
-              createdAt: parseDate(
-                rawTrainData.created_at,
-                rawTrainData.EventCode
-              )
-                ? parseDate(rawTrainData.created_at, rawTrainData.EventCode)
-                : stations[0].schDep,
-              updatedAt: parseDate(
-                rawTrainData.updated_at,
-                rawTrainData.EventCode
-              )
-                ? parseDate(rawTrainData.updated_at, rawTrainData.EventCode)
-                : stations[0].schDep,
+              createdAt: parseDate(rawTrainData.created_at, "America/New_York")
+                ? parseDate(rawTrainData.created_at, "America/New_York")
+                : parseDate(rawTrainData.updated_at, "America/New_York"),
+              updatedAt: parseDate(rawTrainData.updated_at, "America/New_York")
+                ? parseDate(rawTrainData.updated_at, "America/New_York")
+                : parseDate(rawTrainData.created_at, "America/New_York"),
               lastValTS: parseDate(
                 rawTrainData.LastValTS,
                 rawTrainData.EventCode
