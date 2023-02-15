@@ -74,15 +74,6 @@ const fetchStationsForCleaning = async () => {
     .features;
 };
 
-const now = new Date();
-const year = now.getFullYear();
-let dst_start = new Date(year, 2, 14);
-let dst_end = new Date(year, 10, 7);
-dst_start.setDate(14 - dst_start.getDay()); // adjust date to 2nd Sunday
-dst_end.setDate(7 - dst_end.getDay()); // adjust date to the 1st Sunday
-
-const isDST = Number(now >= dst_start && now < dst_end);
-
 const parseDate = (badDate: string | null, code: string | null) => {
   if (badDate == null || code == null) return null;
 
@@ -112,6 +103,10 @@ const parseDate = (badDate: string | null, code: string | null) => {
       HMS[0] += 12; //adds 12 hour difference for time zone
     }
 
+    if (dateArr.length == 3 && dateArr[2] == "AM" && HMS[0] == 12) {
+      HMS[0] = 0; //12 AM is 0 hour
+    }
+
     const month = MDY[0].toString().padStart(2, "0");
     const date = MDY[1].toString().padStart(2, "0");
     const year = MDY[2].toString().padStart(4, "0");
@@ -119,6 +114,15 @@ const parseDate = (badDate: string | null, code: string | null) => {
     const hour = HMS[0].toString().padStart(2, "0");
     const minute = HMS[1].toString().padStart(2, "0");
     const second = HMS[2].toString().padStart(2, "0");
+
+    const now = new Date();
+    const nowYear = now.getFullYear();
+    let dst_start = new Date(nowYear, 2, 14);
+    let dst_end = new Date(nowYear, 10, 7);
+    dst_start.setDate(14 - dst_start.getDay()); // adjust date to 2nd Sunday
+    dst_end.setDate(7 - dst_end.getDay()); // adjust date to the 1st Sunday
+
+    const isDST = Number(now >= dst_start && now < dst_end);
 
     return `${year}-${month}-${date}T${hour}:${minute}:${second}${offsets[timeZone][isDST]}`;
   } catch (e) {
@@ -306,7 +310,7 @@ const updateTrains = async () => {
 
       fetchTrainsForCleaning()
         .then((amtrakData) => {
-          const now: number = new Date().valueOf();
+          const nowCleaning: number = new Date().valueOf();
 
           staleData.activeTrains = 0;
           staleData.avgLastUpdate = 0;
@@ -428,7 +432,7 @@ const updateTrains = async () => {
 
             if (train.trainState === "Active") {
               staleData.avgLastUpdate +=
-                now - new Date(train.updatedAt).valueOf();
+                nowCleaning - new Date(train.updatedAt).valueOf();
               staleData.activeTrains++;
             }
           });
