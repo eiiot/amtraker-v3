@@ -107,6 +107,11 @@ const parseDate = (badDate: string | null, code: string | null) => {
       HMS[0] = 0; //12 AM is 0 hour
     }
 
+    if (HMS[0] == 24) {
+      HMS[0] = 0;
+      MDY[1] += 1; //if the hour is 24, it's actually 0 on the next day
+    }
+
     const month = MDY[0].toString().padStart(2, "0");
     const date = MDY[1].toString().padStart(2, "0");
     const year = MDY[2].toString().padStart(4, "0");
