@@ -482,7 +482,7 @@ Bun.serve({
     }
 
     if (url === "/docs") {
-      return Response.redirect("https://amtrak.piemadd.com", 302);
+      return Response.redirect("https://github.com/piemadd/amtrak", 302);
     }
 
     if (url === "/v3") {
