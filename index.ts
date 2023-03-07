@@ -445,7 +445,7 @@ const updateTrains = async () => {
           staleData.avgLastUpdate =
             staleData.avgLastUpdate / staleData.activeTrains;
 
-          if (staleData.avgLastUpdate > 1000 * 60 * 15) {
+          if (staleData.avgLastUpdate > 1000 * 60 * 20) {
             console.log("Data is stale, setting...");
             staleData.stale = true;
           }
