@@ -1,14 +1,22 @@
 export interface Train {
   routeName: string;
   trainNum: number;
+  trainID: string;
+  lat: number;
+  lon: number;
+  trainTimely: string;
   stations: Station[];
-  heading: Heading;
+  heading: string;
   eventCode: string;
+  eventTZ: string[];
+  eventName: string;
   origCode: string;
   originTZ: string[];
+  origName: string;
   destCode: string;
   destTZ: string[];
-  trainState: TrainState;
+  destName: string;
+  trainState: string;
   velocity: number;
   statusMsg: string;
   createdAt: string;
@@ -44,7 +52,21 @@ export interface Station {
   dep: string;
   arrCmnt: string;
   depCmnt: string;
-  status: StationStatus;
+  status: string;
+}
+
+export interface StationMeta {
+  name: string;
+  code: string;
+  tz: string;
+  lat: number;
+  lon: number;
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  zip: number;
+  trains: string[];
 }
 
 export enum StationStatus {
@@ -54,6 +76,16 @@ export enum StationStatus {
   Unknown = "Unknown",
 }
 
-export interface Response {
+export interface TrainResponse {
   [key: string]: Train[];
+}
+
+export interface StationResponse {
+  [key: string]: StationMeta;
+}
+
+export interface StaleData {
+  avgLastUpdate: number;
+  activeTrains: number;
+  stale: boolean;
 }

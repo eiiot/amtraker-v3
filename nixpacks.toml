@@ -1,0 +1,10 @@
+# screw proper configs
+[phases.setup]
+nixPkgs = ['unzip']
+cmds = ['echo "no setup"']
+
+[phases.install]
+cmds = ['echo "whats an install"']
+
+[start]
+cmd = 'bash run.sh'

@@ -1,4 +1,3 @@
-//so what if im using strings for the keys? sugma balz lol
 export const trainNames = {
   1: "Sunset Limited",
   2: "Sunset Limited",
@@ -248,11 +247,13 @@ export const trainNames = {
   365: "Blue Water",
   370: "Wolverine",
   371: "Wolverine",
-  380: "Illinois Service",
-  381: "Illinois Service",
-  382: "Illinois Service",
-  383: "Illinois Service",
+  380: "Illinois Zephyr",
+  381: "Carl Sandburg",
+  382: "Carl Sandburg",
+  383: "Illinois Zephyr",
   390: "Saluki",
+  391: "Saluki",
+  392: "Illini",
   393: "Illini",
   400: "Northeast Regional",
   405: "Northeast Regional",
