@@ -606,6 +606,8 @@ export const trainNames = {
   822: "Heartland Flyer",
   1105: "Winter Park Express",
   1106: "Winter Park Express",
+  1333: "Borealis",
+  1340: "Borealis",
   1689: "Downeaster",
   1701: "San Joaquins",
   2003: "Piero Limited",
